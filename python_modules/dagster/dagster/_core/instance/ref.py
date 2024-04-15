@@ -227,6 +227,7 @@ class InstanceRef(
         storage_data: Optional[ConfigurableClassData] = None,
         secrets_loader_data: Optional[ConfigurableClassData] = None,
     ):
+        print(run_launcher_data)
         return super(cls, InstanceRef).__new__(
             cls,
             local_artifact_storage_data=check.inst_param(

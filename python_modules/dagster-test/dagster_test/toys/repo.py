@@ -150,6 +150,10 @@ def basic_assets_repository():
 
     return [load_assets_from_modules([basic_assets]), basic_assets.basic_assets_job]
 
+@repository
+def thomas():
+    from . import gcp
+    return [load_assets_from_modules([gcp])]
 
 @repository
 def partitioned_assets_repository():
