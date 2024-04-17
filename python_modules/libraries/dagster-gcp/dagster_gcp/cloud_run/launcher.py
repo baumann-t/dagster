@@ -52,7 +52,7 @@ class CloudRunLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
     def launch_run(self, context: LaunchRunContext) -> None:
 
-        print("here")
+        print(context)
     #     """Launches a run on Google Cloud Run."""
 
         # service_name = f"run-{context.dagster_run.run_id}"

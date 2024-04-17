@@ -7,7 +7,7 @@ run_coordinator:
   class: QueuedRunCoordinator
 
 run_launcher:
-  module: dagster_gcp.cloud_run
+  module: python_modules/libraries/dagster-gcp/dagster_gcp/cloud_run
   class: CloudRunLauncher
   config:
     project_id: dagster
