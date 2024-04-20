@@ -13,7 +13,7 @@ run_launcher:
     project_id: dagster
     region: northamerica-northeast1
     service_account: dagster@dagster-420313.iam.gserviceaccount.com
-    image_for_run: docker.lala
+    cloud_run_job_name: projects/dagster/locations/northamerica-northeast1/jobs/dagster
 
 storage:
   postgres:
