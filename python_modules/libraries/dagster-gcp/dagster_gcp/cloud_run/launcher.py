@@ -3,33 +3,38 @@ from dagster._core.events import EngineEventData
 from dagster._core.launcher.base import RunLauncher, CheckRunHealthResult, WorkerStatus, LaunchRunContext
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 from dagster._serdes.config_class import ConfigurableClassData
-# from google.cloud import run_v2
-# from google.cloud.run_v2 import types
+from google.cloud import run_v2
+from collections import namedtuple
+from dagster._core.storage.tags import RUN_WORKER_ID_TAG
+import dagster._check as check
+from dagster._grpc.types import ExecuteRunArgs
 from dagster._serdes import ConfigurableClass
 from typing_extensions import Self
 from dagster._core.instance import T_DagsterInstance
 import uuid
 import json
+from google.api_core.exceptions import GoogleAPIError
+from google.api_core.operation import Operation
 import logging
 
-class CloudRunLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
+Tags = namedtuple('Tags', ['job_name', 'job_uuid'])
+
+class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     def __init__(
         self,
         inst_data: Optional[ConfigurableClassData] = None,
         project_id=None,
         region=None,
         service_account=None,
-        image_for_run=None,
-        client=None
+        cloud_run_job_name=None,
         ):
-        logging.basicConfig(level=logging.DEBUG)
-        logging.debug(f"Initializing CloudRunLauncher with: {project_id}, {region}, {service_account}, {image_for_run}")
+
         self._inst_data = inst_data
         self.project_id = project_id
         self.region = region
         self.service_account = service_account
-        # self.client = client or run_v2.ServicesClient()
-        self.image_for_run = image_for_run
+        self.cloud_run = run_v2.JobsClient()
+        self.cloud_run_job_name = cloud_run_job_name
 
     @classmethod
     def config_type(cls):
@@ -37,7 +42,7 @@ class CloudRunLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
             'project_id': Field(StringSource, is_required=False, description='Google Cloud project ID.'),
             'region': Field(StringSource, is_required=False, description='Region for Cloud Run services.'),
             'service_account': Field(StringSource, is_required=False, description='Service account email for Cloud Run.'),
-            'image_for_run': Field(StringSource, is_required=False, description='Docker image used to launch the Cloud Run task')
+            'cloud_run_job_name': Field(StringSource, is_required=False, description='Docker image used to launch the Cloud Run task'),
         }
 
     @classmethod
@@ -52,37 +57,70 @@ class CloudRunLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
     def launch_run(self, context: LaunchRunContext) -> None:
 
-        print(context)
     #     """Launches a run on Google Cloud Run."""
 
-        # service_name = f"run-{context.dagster_run.run_id}"
-        # container_image = self._get_image_for_run(context)
-        # self._launch_cloud_run_job(service_name, container_image, context)
+        job_name = self.cloud_run_job_name
+        run = context.dagster_run
 
-    def _launch_cloud_run_job(self, service_name, container_image, context):
-        print("here")
-    #     # Construct the Cloud Run service object
-    #     service = types.Service(
-    #         name=service_name,
-    #         template=types.RevisionTemplate(
-    #             containers=[types.Container(image=container_image)],
-    #             service_account=self.service_account
-    #         )
-    #     )
+        job_code_origin = check.not_none(context.job_code_origin)
 
-    #     # Create or update the Cloud Run service
-    #     operation = self.client.create_service(
-    #         parent=f"projects/{self.project_id}/locations/{self.region}",
-    #         service=service
-    #     )
-    #     operation.result()  # Wait for the operation to complete
+        command = ExecuteRunArgs(
+            job_origin=job_code_origin,
+            run_id=run.run_id,
+            instance_ref=self._instance.get_ref(),
+        ).get_command_args()
 
-    #     self._instance.report_engine_event(
-    #         message=f"Launched Cloud Run service: {service_name}",
-    #         dagster_run=context.dagster_run,
-    #         engine_event_data=EngineEventData(metadata={'service_name': service_name}),
-    #         cls=self.__class__,
-    #     )
+        self._launch_cloud_run_job(job_name, command, run)
+
+
+    def _launch_cloud_run_job(self, job_name, command, run) -> None:
+        # Construct the Cloud Run service object
+        try:
+            request = run_v2.RunJobRequest(
+                name=job_name,
+                overrides= {
+                    "container_overrides": [{
+                        "args": command,
+                    }]
+                }
+            )
+            operation = self.cloud_run.run_job(request=request)
+            self._set_run_tags(run, operation)
+            self.report_launch_events(run, operation)
+
+        except GoogleAPIError as e:
+            raise Exception(f"An error occurred: {e}")
+
+
+    def report_launch_events(self, run: DagsterRun, operation: Operation) -> None:
+
+        metadata = {}
+        metadata["Cloud Run operation"] = operation.metadata.name
+        metadata["Cloud Run operation uid"] = operation.metadata.uid
+
+        metadata["Run ID"] = run.run_id
+        self._instance.report_engine_event(
+            message="Launching run in Cloud Run Job",
+            dagster_run=run,
+            engine_event_data=EngineEventData(metadata),
+            cls=self.__class__,
+        )
+
+    def _set_run_tags(self, run: DagsterRun, operation: Operation) -> None:
+        tags = {
+            "cloud_run/job_name": operation.metadata.name,
+            "cloud_run/run_uuid": operation.metadata.uid,
+            RUN_WORKER_ID_TAG: str(uuid.uuid4().hex)[0:6],
+        }
+        self._instance.add_run_tags(run.run_id, tags)
+
+    def _get_run_tags(self, run_id: str) -> Tags:
+        run = self._instance.get_run_by_id(run_id)
+        tags = run.tags if run else {}
+        job_name = tags.get("cloud_run/job_name")
+        job_uuid = tags.get("cloud_run/run_uuid")
+
+        return Tags(job_name, job_uuid)
 
     def terminate(self, run_id: str) -> bool:
         print("here")
@@ -95,17 +133,18 @@ class CloudRunLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     #         print(f"Failed to terminate Cloud Run service: {e}")
     #         return False
 
+    @property
+    def supports_check_run_worker_health(self) -> bool:
+        return True
+
     def check_run_worker_health(self, run: DagsterRun) -> CheckRunHealthResult:
-        print("here")
+
     #     """Checks the health of the run worker."""
-    #     service_name = f"run-{run.run_id}"
-    #     try:
-    #         service = self.client.get_service(name=service_name)
-    #         status = service.status.conditions[0].status
-    #         if status == 'Ready':
-    #             return CheckRunHealthResult(WorkerStatus.RUNNING)
-    #         elif status == 'Failed':
-    #             return CheckRunHealthResult(WorkerStatus.FAILED, service.status.conditions[0].message)
-    #         return CheckRunHealthResult(WorkerStatus.UNKNOWN)
-    #     except Exception as e:
-    #         return CheckRunHealthResult(WorkerStatus.NOT_FOUND, str(e))
+        run_worker_id = run.tags.get(RUN_WORKER_ID_TAG)
+        tags = self._get_run_tags(run.run_id)
+
+        if not (tags.job_name and tags.job_uuid):
+            return CheckRunHealthResult(WorkerStatus.UNKNOWN, "", run_worker_id=run_worker_id)
+
+        job = self.cloud_run.get_execution(name=tags.job_name)
+        print(job)

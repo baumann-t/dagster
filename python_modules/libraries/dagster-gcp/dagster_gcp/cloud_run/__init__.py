@@ -1,1 +1,1 @@
-from .launcher import CloudRunLauncher
+from .launcher import CloudRunJobLauncher

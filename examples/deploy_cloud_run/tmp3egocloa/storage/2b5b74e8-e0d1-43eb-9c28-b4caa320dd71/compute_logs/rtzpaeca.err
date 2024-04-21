@@ -1,0 +1,7 @@
+[32m2024-04-21 13:33:32 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - 74785 - LOGS_CAPTURED - Started capturing logs in process (pid: 74785).
+[32m2024-04-21 13:33:32 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - 74785 - thomas_gcp - STEP_START - Started execution of step "thomas_gcp".
+[32m2024-04-21 13:33:33 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - 74785 - thomas_gcp - STEP_OUTPUT - Yielded output "result" of type "Any". (Type check passed).
+[32m2024-04-21 13:33:33 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - thomas_gcp - Writing file at: /Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run/tmp3egocloa/storage/thomas_gcp using PickledObjectFilesystemIOManager...
+[32m2024-04-21 13:33:34 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - 74785 - thomas_gcp - ASSET_MATERIALIZATION - Materialized value thomas_gcp.
+[32m2024-04-21 13:33:34 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - 74785 - thomas_gcp - HANDLED_OUTPUT - Handled output "result" using IO manager "io_manager"
+[32m2024-04-21 13:33:34 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 2b5b74e8-e0d1-43eb-9c28-b4caa320dd71 - 74785 - thomas_gcp - STEP_SUCCESS - Finished execution of step "thomas_gcp" in 1.66s.
