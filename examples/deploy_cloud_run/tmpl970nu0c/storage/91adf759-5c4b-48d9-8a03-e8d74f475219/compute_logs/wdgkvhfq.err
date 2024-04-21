@@ -1,0 +1,41 @@
+[32m2024-04-20 15:21:24 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 91adf759-5c4b-48d9-8a03-e8d74f475219 - 93027 - LOGS_CAPTURED - Started capturing logs in process (pid: 93027).
+[32m2024-04-20 15:21:24 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 91adf759-5c4b-48d9-8a03-e8d74f475219 - 93027 - thomas_gcp - STEP_START - Started execution of step "thomas_gcp".
+[32m2024-04-20 15:21:24 -0400[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 91adf759-5c4b-48d9-8a03-e8d74f475219 - 93027 - thomas_gcp - STEP_OUTPUT - Yielded output "result" of type "Any". (Type check passed).
+[32m2024-04-20 15:21:25 -0400[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - 91adf759-5c4b-48d9-8a03-e8d74f475219 - 93027 - thomas_gcp - STEP_FAILURE - Execution of step "thomas_gcp" failed.
+
+dagster._core.errors.DagsterExecutionHandleOutputError: Error occurred while handling output "result" of step "thomas_gcp"::
+
+PermissionError: [Errno 13] Permission denied: '/opt/dagster'
+
+Stack Trace:
+  File "/Users/thomasbaumann/Documents/code/dagster/python_modules/dagster/dagster/_core/execution/plan/utils.py", line 54, in op_execution_error_boundary
+    yield
+  File "/Users/thomasbaumann/Documents/code/dagster/python_modules/dagster/dagster/_utils/__init__.py", line 464, in iterate_with_context
+    next_output = next(iterator)
+  File "/Users/thomasbaumann/Documents/code/dagster/python_modules/dagster/dagster/_core/execution/plan/execute_step.py", line 794, in _gen_fn
+    gen_output = output_manager.handle_output(output_context, output.value)
+  File "/Users/thomasbaumann/Documents/code/dagster/python_modules/dagster/dagster/_core/storage/upath_io_manager.py", line 455, in handle_output
+    self.make_directory(path.parent)
+  File "/Users/thomasbaumann/Documents/code/dagster/python_modules/dagster/dagster/_core/storage/upath_io_manager.py", line 115, in make_directory
+    path.mkdir(parents=True, exist_ok=True)
+  File "/Users/thomasbaumann/.pyenv/versions/3.10.14/lib/python3.10/pathlib.py", line 1179, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+  File "/Users/thomasbaumann/.pyenv/versions/3.10.14/lib/python3.10/pathlib.py", line 1179, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+  File "/Users/thomasbaumann/.pyenv/versions/3.10.14/lib/python3.10/pathlib.py", line 1175, in mkdir
+    self._accessor.mkdir(self, mode)
+
+The above exception occurred during handling of the following exception:
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/dagster/local'
+
+Stack Trace:
+  File "/Users/thomasbaumann/.pyenv/versions/3.10.14/lib/python3.10/pathlib.py", line 1175, in mkdir
+    self._accessor.mkdir(self, mode)
+
+The above exception occurred during handling of the following exception:
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/dagster/local/storage'
+
+Stack Trace:
+  File "/Users/thomasbaumann/.pyenv/versions/3.10.14/lib/python3.10/pathlib.py", line 1175, in mkdir
+    self._accessor.mkdir(self, mode)
+[0m

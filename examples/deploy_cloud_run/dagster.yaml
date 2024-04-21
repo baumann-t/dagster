@@ -8,29 +8,54 @@ run_coordinator:
 
 run_launcher:
   module: dagster_gcp.cloud_run
-  class: CloudRunLauncher
+  class: CloudRunJobLauncher
   config:
     project_id: dagster
     region: northamerica-northeast1
     service_account: dagster@dagster-420313.iam.gserviceaccount.com
-    cloud_run_job_name: projects/dagster/locations/northamerica-northeast1/jobs/dagster
+    cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster
 
-storage:
-  postgres:
+run_storage:
+  module: dagster_postgres.run_storage
+  class: PostgresRunStorage
+  config:
     postgres_db:
+      hostname:
+        env: DAGSTER_PG_HOST
       username:
         env: DAGSTER_PG_USERNAME
       password:
         env: DAGSTER_PG_PASSWORD
-      hostname:
-        env: DAGSTER_PG_HOST
       db_name:
         env: DAGSTER_PG_DB
       port: 5432
 
-
-local_artifact_storage:
-  module: dagster.core.storage.root
-  class: LocalArtifactStorage
+schedule_storage:
+  module: dagster_postgres.schedule_storage
+  class: PostgresScheduleStorage
   config:
-    base_dir: "/opt/dagster/local/"
+    postgres_db:
+      hostname:
+        env: DAGSTER_PG_HOST
+      username:
+        env: DAGSTER_PG_USERNAME
+      password:
+        env: DAGSTER_PG_PASSWORD
+      db_name:
+        env: DAGSTER_PG_DB
+      port: 5432
+
+event_log_storage:
+  module: dagster_postgres.event_log
+  class: PostgresEventLogStorage
+  config:
+    postgres_db:
+      hostname:
+        env: DAGSTER_PG_HOST
+      username:
+        env: DAGSTER_PG_USERNAME
+      password:
+        env: DAGSTER_PG_PASSWORD
+      db_name:
+        env: DAGSTER_PG_DB
+      port: 5432
