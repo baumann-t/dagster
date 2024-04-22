@@ -69,7 +69,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
             run_id=run.run_id,
             instance_ref=self._instance.get_ref(),
         ).get_command_args()
-
+        print(command)
         self._launch_cloud_run_job(job_name, command, run)
 
 

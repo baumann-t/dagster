@@ -1,0 +1,22 @@
+FROM python:3.10-slim
+
+RUN mkdir -p /opt/dagster/dagster_home /opt/dagster/app
+
+RUN pip install dagster-webserver dagster-postgres google-cloud-run
+
+# Copy your code and workspace to /opt/dagster/app
+COPY  ./examples/deploy_cloud_run/defs.py  ./examples/deploy_cloud_run/workspace.yaml /opt/dagster/app/
+# copy the dagster_gcp package to /opt/dagster/app
+COPY python_modules/libraries/dagster-gcp /opt/dagster/app/python_modules/libraries/dagster_gcp
+RUN pip install ./opt/dagster/app/python_modules/libraries/dagster_gcp
+
+ENV DAGSTER_HOME=/opt/dagster/dagster_home/
+
+# Copy dagster instance YAML to $DAGSTER_HOME
+COPY  ./examples/deploy_cloud_run/dagster.yaml /opt/dagster/dagster_home/
+
+WORKDIR /opt/dagster/app
+
+EXPOSE 3000
+
+CMD ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
