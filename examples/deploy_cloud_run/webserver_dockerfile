@@ -10,6 +10,8 @@ COPY  ./examples/deploy_cloud_run/defs.py  ./examples/deploy_cloud_run/workspace
 COPY python_modules/libraries/dagster-gcp /opt/dagster/app/python_modules/libraries/dagster_gcp
 RUN pip install ./opt/dagster/app/python_modules/libraries/dagster_gcp
 
+ENV GOOGLE_APPLICATION_CREDENTIALS /secrets/key.json
+
 ENV DAGSTER_HOME=/opt/dagster/dagster_home/
 
 # Copy dagster instance YAML to $DAGSTER_HOME

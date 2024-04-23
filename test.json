@@ -68,17 +68,17 @@
             "code_pointer": {
                 "__class__": "FileCodePointer",
                 "fn_name": "<<LOAD_ALL_ASSETS>>",
-                "python_file": "/Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run/defs.py",
-                "working_directory": "/Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run"
+                "python_file": "/opt/dagster/app/defs.py",
+                "working_directory": "/opt/dagster/app"
             },
             "container_context": {},
             "container_image": null,
             "entry_point": [
                 "dagster"
             ],
-            "executable_path": "/Users/thomasbaumann/.pyenv/versions/3.10.14/envs/dagster310/bin/python"
+            "executable_path": "/usr/local/bin/python"
         }
     },
-    "pipeline_run_id": "2b5b74e8-e0d1-43eb-9c28-b4caa320dd71",
+    "pipeline_run_id": "c9de60c0-34b6-453c-93f5-62bc4ec83669",
     "set_exit_code_on_failure": null
 }
