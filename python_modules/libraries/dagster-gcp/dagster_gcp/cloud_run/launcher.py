@@ -1,4 +1,4 @@
-from dagster import DagsterRun, Field, StringSource
+from dagster import DagsterRun, Field, StringSource, IntSource
 from dagster._core.events import EngineEventData
 from dagster._core.launcher.base import RunLauncher, CheckRunHealthResult, WorkerStatus, LaunchRunContext
 from typing import Any, Dict, List, Mapping, Optional, Sequence
@@ -12,6 +12,7 @@ from dagster._serdes import ConfigurableClass
 from typing_extensions import Self
 from dagster._core.instance import T_DagsterInstance
 import uuid
+from google.longrunning import operations_pb2
 import json
 from google.api_core.exceptions import GoogleAPIError
 from google.api_core.operation import Operation
@@ -37,9 +38,9 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         self.cloud_run_job_name = cloud_run_job_name
 
     @classmethod
-    def config_type(cls):
+    def config_type(cls) -> Dict[str, Any]:
         return {
-            'project_id': Field(StringSource, is_required=False, description='Google Cloud project ID.'),
+            'project_id': Field(IntSource, is_required=False, description='Google Cloud project ID.'),
             'region': Field(StringSource, is_required=False, description='Region for Cloud Run services.'),
             'service_account': Field(StringSource, is_required=False, description='Service account email for Cloud Run.'),
             'cloud_run_job_name': Field(StringSource, is_required=False, description='Docker image used to launch the Cloud Run task'),
@@ -69,7 +70,6 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
             run_id=run.run_id,
             instance_ref=self._instance.get_ref(),
         ).get_command_args()
-        print(command)
         self._launch_cloud_run_job(job_name, command, run)
 
 
@@ -123,7 +123,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         return Tags(job_name, job_uuid)
 
     def terminate(self, run_id: str) -> bool:
-        print("here")
+        print("puta")
     #     """Terminates the specified run on Cloud Run."""
     #     service_name = f"run-{run_id}"
     #     try:
@@ -146,5 +146,18 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         if not (tags.job_name and tags.job_uuid):
             return CheckRunHealthResult(WorkerStatus.UNKNOWN, "", run_worker_id=run_worker_id)
 
-        job = self.cloud_run.get_execution(name=tags.job_name)
-        print(job)
+        try:
+            client = run_v2.ExecutionsClient()
+
+            # Initialize request argument(s)
+            request = run_v2.GetExecutionRequest(
+                name=tags.job_name,
+            )
+
+            # Make the request
+            response = client.get_execution(request=request)
+            logging.warning(
+                   response
+                )
+        except GoogleAPIError as e:
+            raise Exception(f"An error occurred: {e}")

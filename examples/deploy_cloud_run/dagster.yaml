@@ -10,7 +10,7 @@ run_launcher:
   module: dagster_gcp.cloud_run
   class: CloudRunJobLauncher
   config:
-    project_id: dagster
+    project_id: 77834198250
     region: northamerica-northeast1
     service_account: dagster@dagster-420313.iam.gserviceaccount.com
     cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster
@@ -59,3 +59,7 @@ event_log_storage:
       db_name:
         env: DAGSTER_PG_DB
       port: 5432
+
+run_monitoring:
+  enabled: true
+  poll_interval_seconds: 10
