@@ -12,13 +12,13 @@ from dagster._serdes import ConfigurableClass
 from typing_extensions import Self
 from dagster._core.instance import T_DagsterInstance
 import uuid
-from google.longrunning import operations_pb2
+from google.longrunning.operations_pb2 import GetOperationRequest
 import json
 from google.api_core.exceptions import GoogleAPIError
 from google.api_core.operation import Operation
 import logging
 
-Tags = namedtuple('Tags', ['job_name', 'job_uuid'])
+Tags = namedtuple('Tags', ['job_name', 'operation_id'])
 
 class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     def __init__(
@@ -85,9 +85,9 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
                 }
             )
             operation = self.cloud_run.run_job(request=request)
+
             self._set_run_tags(run, operation)
             self.report_launch_events(run, operation)
-
         except GoogleAPIError as e:
             raise Exception(f"An error occurred: {e}")
 
@@ -96,7 +96,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
         metadata = {}
         metadata["Cloud Run operation"] = operation.metadata.name
-        metadata["Cloud Run operation uid"] = operation.metadata.uid
+        metadata["Cloud Run operation id"] = operation.operation.name
 
         metadata["Run ID"] = run.run_id
         self._instance.report_engine_event(
@@ -109,7 +109,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     def _set_run_tags(self, run: DagsterRun, operation: Operation) -> None:
         tags = {
             "cloud_run/job_name": operation.metadata.name,
-            "cloud_run/run_uuid": operation.metadata.uid,
+            "cloud_run/operation_id": operation.operation.name,
             RUN_WORKER_ID_TAG: str(uuid.uuid4().hex)[0:6],
         }
         self._instance.add_run_tags(run.run_id, tags)
@@ -118,9 +118,9 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         run = self._instance.get_run_by_id(run_id)
         tags = run.tags if run else {}
         job_name = tags.get("cloud_run/job_name")
-        job_uuid = tags.get("cloud_run/run_uuid")
+        operation_id = tags.get("cloud_run/operation_id")
 
-        return Tags(job_name, job_uuid)
+        return Tags(job_name, operation_id)
 
     def terminate(self, run_id: str) -> bool:
         print("puta")
@@ -143,21 +143,17 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         run_worker_id = run.tags.get(RUN_WORKER_ID_TAG)
         tags = self._get_run_tags(run.run_id)
 
-        if not (tags.job_name and tags.job_uuid):
+        if not (tags.job_name and tags.operation_id):
             return CheckRunHealthResult(WorkerStatus.UNKNOWN, "", run_worker_id=run_worker_id)
 
         try:
-            client = run_v2.ExecutionsClient()
+            operation_request = GetOperationRequest(name=tags.operation_id)s
+            operation = self.cloud_run.get_operation(request=operation_request)
+            if operation.done:
+                if operation.error:
+                    return CheckRunHealthResult(WorkerStatus.FAILED, operation.error.message, run_worker_id=run_worker_id)
+                return CheckRunHealthResult(WorkerStatus.SUCCESS, run_worker_id=run_worker_id)
+            return CheckRunHealthResult(WorkerStatus.RUNNING, run_worker_id=run_worker_id)
 
-            # Initialize request argument(s)
-            request = run_v2.GetExecutionRequest(
-                name=tags.job_name,
-            )
-
-            # Make the request
-            response = client.get_execution(request=request)
-            logging.warning(
-                   response
-                )
         except GoogleAPIError as e:
             raise Exception(f"An error occurred: {e}")
