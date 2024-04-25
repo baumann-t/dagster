@@ -18,7 +18,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.api_core.operation import Operation
 import logging
 
-Tags = namedtuple('Tags', ['job_name', 'operation_id'])
+Tags = namedtuple('Tags', ['job_execution', 'operation_id'])
 
 class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     def __init__(
@@ -57,8 +57,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         return self._inst_data
 
     def launch_run(self, context: LaunchRunContext) -> None:
-
-    #     """Launches a run on Google Cloud Run."""
+        """Launches a dagster run on Google Cloud Run."""
 
         job_name = self.cloud_run_job_name
         run = context.dagster_run
@@ -74,7 +73,8 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
 
     def _launch_cloud_run_job(self, job_name, command, run) -> None:
-        # Construct the Cloud Run service object
+        """Launches a Cloud Run job."""
+
         try:
             request = run_v2.RunJobRequest(
                 name=job_name,
@@ -95,7 +95,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     def report_launch_events(self, run: DagsterRun, operation: Operation) -> None:
 
         metadata = {}
-        metadata["Cloud Run operation"] = operation.metadata.name
+        metadata["Cloud Run execution"] = operation.metadata.name
         metadata["Cloud Run operation id"] = operation.operation.name
 
         metadata["Run ID"] = run.run_id
@@ -108,7 +108,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
     def _set_run_tags(self, run: DagsterRun, operation: Operation) -> None:
         tags = {
-            "cloud_run/job_name": operation.metadata.name,
+            "cloud_run/job_execution": operation.metadata.name,
             "cloud_run/operation_id": operation.operation.name,
             RUN_WORKER_ID_TAG: str(uuid.uuid4().hex)[0:6],
         }
@@ -117,21 +117,39 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
     def _get_run_tags(self, run_id: str) -> Tags:
         run = self._instance.get_run_by_id(run_id)
         tags = run.tags if run else {}
-        job_name = tags.get("cloud_run/job_name")
+        job_execution = tags.get("cloud_run/job_execution")
         operation_id = tags.get("cloud_run/operation_id")
 
-        return Tags(job_name, operation_id)
+        return Tags(job_execution, operation_id)
 
     def terminate(self, run_id: str) -> bool:
-        print("puta")
-    #     """Terminates the specified run on Cloud Run."""
-    #     service_name = f"run-{run_id}"
-    #     try:
-    #         self.client.delete_service(name=service_name)
-    #         return True
-    #     except Exception as e:
-    #         print(f"Failed to terminate Cloud Run service: {e}")
-    #         return False
+        """Terminates the specified run on Cloud Run."""
+        tags = self._get_run_tags(run_id)
+        run = self._instance.get_run_by_id(run_id)
+
+        if not run:
+            return False
+
+        self._instance.report_run_canceling(run)
+        job_execution = tags.job_execution
+
+        try:
+            client = run_v2.ExecutionsClient()
+            request = run_v2.DeleteExecutionRequest(
+                name=job_execution,
+            )
+            operation = client.delete_execution(request=request)
+            print(operation)
+            if operation.done:
+                if operation.error:
+                    raise Exception(f"An error occurred: {operation.error.message}")
+                return True
+
+        except GoogleAPIError as e:
+            print(e)
+            return False
+
+        return False
 
     @property
     def supports_check_run_worker_health(self) -> bool:
@@ -139,20 +157,20 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
     def check_run_worker_health(self, run: DagsterRun) -> CheckRunHealthResult:
 
-    #     """Checks the health of the run worker."""
+        """Checks the health of the run worker."""
         run_worker_id = run.tags.get(RUN_WORKER_ID_TAG)
         tags = self._get_run_tags(run.run_id)
 
-        if not (tags.job_name and tags.operation_id):
+        if not tags.operation_id:
             return CheckRunHealthResult(WorkerStatus.UNKNOWN, "", run_worker_id=run_worker_id)
 
         try:
-            operation_request = GetOperationRequest(name=tags.operation_id)s
+            operation_request = GetOperationRequest(name=tags.operation_id)
             operation = self.cloud_run.get_operation(request=operation_request)
             if operation.done:
                 if operation.error:
                     return CheckRunHealthResult(WorkerStatus.FAILED, operation.error.message, run_worker_id=run_worker_id)
-                return CheckRunHealthResult(WorkerStatus.SUCCESS, run_worker_id=run_worker_id)
+                return CheckRunHealthResult(WorkerStatus.SUCCESS, "operation succeedeed", run_worker_id=run_worker_id)
             return CheckRunHealthResult(WorkerStatus.RUNNING, run_worker_id=run_worker_id)
 
         except GoogleAPIError as e:
