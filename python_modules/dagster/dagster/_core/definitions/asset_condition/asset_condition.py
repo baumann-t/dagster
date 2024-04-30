@@ -1,5 +1,4 @@
 import functools
-import hashlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import (
@@ -25,6 +24,7 @@ from dagster._core.definitions.metadata import MetadataMapping, MetadataValue
 from dagster._core.definitions.partition import AllPartitionsSubset
 from dagster._model import DagsterModel
 from dagster._serdes.serdes import PackableValue, whitelist_for_serdes
+from dagster._utils.security import non_secure_md5_hash_str
 
 from ..asset_subset import AssetSubset, ValidAssetSubset
 from ..auto_materialize_rule import AutoMaterializeRule
@@ -279,16 +279,13 @@ class AssetCondition(ABC, DagsterModel):
             )
     """
 
-    class Config:
-        keep_untouched = (functools.cached_property,)
-
     @property
     def unique_id(self) -> str:
         parts = [
             self.__class__.__name__,
             *[child.unique_id for child in self.children],
         ]
-        return hashlib.md5("".join(parts).encode()).hexdigest()
+        return non_secure_md5_hash_str("".join(parts).encode())
 
     @abstractmethod
     def evaluate(self, context: "AssetConditionEvaluationContext") -> "AssetConditionResult":
@@ -382,7 +379,7 @@ class AssetCondition(ABC, DagsterModel):
     def updated_since_cron(cron_schedule: str, timezone: str = "UTC") -> "AssetCondition":
         """Returns an AssetCondition that is true for an asset partition when it has been updated
         since the latest tick of the given cron schedule. For partitioned assets with a time
-        component, this can only be true for the the most recent partition.
+        component, this can only be true for the most recent partition.
         """
         from ..auto_materialize_rule import AutoMaterializeRule
 
@@ -412,7 +409,7 @@ class RuleCondition(AssetCondition):
     @property
     def unique_id(self) -> str:
         parts = [self.rule.__class__.__name__, self.description]
-        return hashlib.md5("".join(parts).encode()).hexdigest()
+        return non_secure_md5_hash_str("".join(parts).encode())
 
     @property
     def description(self) -> str:

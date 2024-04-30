@@ -7,7 +7,7 @@ import {
   ConfigTypeSchema,
   Icon,
   Mono,
-  Subheading,
+  Subtitle,
 } from '@dagster-io/ui-components';
 import {Link} from 'react-router-dom';
 
@@ -20,10 +20,6 @@ import {
 } from './AssetMetadata';
 import {ASSET_NODE_INSTIGATORS_FRAGMENT} from './AssetNodeInstigatorTag';
 import {AssetNodeList} from './AssetNodeList';
-import {
-  AutomaterializePolicyTag,
-  automaterializePolicyDescription,
-} from './AutomaterializePolicyTag';
 import {DependsOnSelfBanner} from './DependsOnSelfBanner';
 import {OverdueTag, freshnessPolicyDescription} from './OverdueTag';
 import {UnderlyingOpsOrGraph} from './UnderlyingOpsOrGraph';
@@ -76,7 +72,7 @@ export const AssetNodeDefinition = ({
             border="bottom"
             flex={{justifyContent: 'space-between', gap: 8}}
           >
-            <Subheading>Description</Subheading>
+            <Subtitle>Description</Subtitle>
             <DescriptionAnnotations assetNode={assetNode} repoAddress={repoAddress} />
           </Box>
           <Box
@@ -92,7 +88,7 @@ export const AssetNodeDefinition = ({
           {assetNode.opVersion && (
             <>
               <Box padding={{vertical: 16, horizontal: 24}} border="top-and-bottom">
-                <Subheading>Code version</Subheading>
+                <Subtitle>Code version</Subtitle>
               </Box>
               <Box padding={{vertical: 16, horizontal: 24}} flex={{gap: 12, alignItems: 'center'}}>
                 <Version>{assetNode.opVersion}</Version>
@@ -103,7 +99,7 @@ export const AssetNodeDefinition = ({
           {assetNode.freshnessPolicy && (
             <>
               <Box padding={{vertical: 16, horizontal: 24}} border="top-and-bottom">
-                <Subheading>Freshness policy</Subheading>
+                <Subtitle>Freshness policy</Subtitle>
               </Box>
               <Box
                 padding={{vertical: 16, horizontal: 24}}
@@ -116,27 +112,11 @@ export const AssetNodeDefinition = ({
               </Box>
             </>
           )}
-          {assetNode.autoMaterializePolicy && (
-            <>
-              <Box padding={{vertical: 16, horizontal: 24}} border="top-and-bottom">
-                <Subheading>Auto-materialize policy</Subheading>
-              </Box>
-              <Box
-                padding={{vertical: 16, horizontal: 24}}
-                flex={{gap: 12, alignItems: 'flex-start'}}
-              >
-                <Body style={{flex: 1}}>
-                  {automaterializePolicyDescription(assetNode.autoMaterializePolicy)}
-                </Body>
-                <AutomaterializePolicyTag policy={assetNode.autoMaterializePolicy} />
-              </Box>
-            </>
-          )}
 
           {assetNode.backfillPolicy && (
             <>
               <Box padding={{vertical: 16, horizontal: 24}} border="top-and-bottom">
-                <Subheading>Backfill policy</Subheading>
+                <Subtitle>Backfill policy</Subtitle>
               </Box>
               <Box
                 padding={{vertical: 16, horizontal: 24}}
@@ -152,9 +132,7 @@ export const AssetNodeDefinition = ({
             border="top-and-bottom"
             flex={{justifyContent: 'space-between', gap: 8}}
           >
-            <Subheading>
-              Upstream assets{upstream?.length ? ` (${upstream.length})` : ''}
-            </Subheading>
+            <Subtitle>Upstream assets{upstream?.length ? ` (${upstream.length})` : ''}</Subtitle>
             <Link to="?view=lineage&lineageScope=upstream">
               <Box flex={{gap: 4, alignItems: 'center'}}>
                 View upstream graph
@@ -173,9 +151,9 @@ export const AssetNodeDefinition = ({
             border="top-and-bottom"
             flex={{justifyContent: 'space-between', gap: 8}}
           >
-            <Subheading>
+            <Subtitle>
               Downstream assets{downstream?.length ? ` (${downstream.length})` : ''}
-            </Subheading>
+            </Subtitle>
           </Box>
           <AssetNodeList items={downstream} />
           {/** Ensures the line between the left and right columns goes to the bottom of the page */}
@@ -185,7 +163,7 @@ export const AssetNodeDefinition = ({
         <Box border="left-and-right" style={{flex: 0.5, minWidth: 0}} flex={{direction: 'column'}}>
           <>
             <Box padding={{vertical: 16, horizontal: 24}} border="bottom">
-              <Subheading>Required resources</Subheading>
+              <Subtitle>Required resources</Subtitle>
             </Box>
             <Box padding={{vertical: 16, horizontal: 24}} border="bottom">
               {[...assetNode.requiredResources]
@@ -222,7 +200,7 @@ export const AssetNodeDefinition = ({
 
           <>
             <Box padding={{vertical: 16, horizontal: 24}} border="bottom">
-              <Subheading>Config</Subheading>
+              <Subtitle>Config</Subtitle>
             </Box>
             <Box padding={{vertical: 16, horizontal: 24}} border="bottom">
               {assetConfigSchema ? (
@@ -245,7 +223,7 @@ export const AssetNodeDefinition = ({
 
           <>
             <Box padding={{vertical: 16, horizontal: 24}} border="bottom">
-              <Subheading>Type</Subheading>
+              <Subtitle>Type</Subtitle>
             </Box>
             {assetType && assetType.displayName !== 'Any' ? (
               <DagsterTypeSummary type={assetType} />
@@ -267,7 +245,7 @@ export const AssetNodeDefinition = ({
               border="top-and-bottom"
               flex={{justifyContent: 'space-between', gap: 8}}
             >
-              <Subheading>Metadata</Subheading>
+              <Subtitle>Metadata</Subtitle>
             </Box>
             <Box style={{flex: 1}}>
               {assetMetadata.length > 0 ? (
@@ -348,7 +326,6 @@ export const ASSET_NODE_DEFINITION_FRAGMENT = gql`
       }
     }
     autoMaterializePolicy {
-      policyType
       rules {
         className
         description

@@ -13,7 +13,7 @@ import {
   IconWrapper,
   NonIdealState,
   Spinner,
-  Subheading,
+  Subtitle,
   Table,
   ifPlural,
 } from '@dagster-io/ui-components';
@@ -323,7 +323,7 @@ export const TickHistoryTimeline = ({
     return (
       <>
         <Box padding={{top: 16, horizontal: 24}} border="bottom">
-          <Subheading>Recent ticks</Subheading>
+          <Subtitle>Recent ticks</Subtitle>
         </Box>
         <Box padding={{vertical: 64}}>
           <Spinner purpose="section" />
@@ -365,7 +365,7 @@ export const TickHistoryTimeline = ({
         onClose={() => onTickClick(undefined)}
       />
       <Box padding={{vertical: 16, horizontal: 24}}>
-        <Subheading>Recent ticks</Subheading>
+        <Subtitle>Recent ticks</Subtitle>
       </Box>
       <Box border="top">
         <LiveTickTimeline
@@ -433,7 +433,7 @@ function TickRow({
         <td style={{width: 120}}>
           {tick.cursor ? (
             <Box flex={{direction: 'row', alignItems: 'center', gap: 8}}>
-              <div style={{fontFamily: FontFamily.monospace, fontSize: '16px'}}>
+              <div style={{fontFamily: FontFamily.monospace, fontSize: '14px'}}>
                 {truncate(tick.cursor || '')}
               </div>
               <CopyButton

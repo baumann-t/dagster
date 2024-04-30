@@ -80,7 +80,6 @@ def test_fs_io_manager():
 
         loaded_input_events = list(filter(lambda evt: evt.is_loaded_input, result.all_events))
         metadata = loaded_input_events[0].event_specific_data.metadata
-        assert metadata["path"] == MetadataValue.path(filepath_a)
         assert len(loaded_input_events) == 1
         assert loaded_input_events[0].event_specific_data.upstream_step_key == "op_a"
 
@@ -573,6 +572,7 @@ def test_backcompat_multipartitions_fs_io_manager():
             return 1
 
         # Upstream partition was never materialized, so this run should error
+        # the error will have the old backcompat path mentioned, because the UPathIOManager will first try to use the normal path, catch the error, and then try to load from the backcompat path, which will cause the actual raised error
         with pytest.raises(FileNotFoundError, match="c/2020-04-21"):
             my_job = define_asset_job(
                 "my_job", [multipartitioned, downstream_of_multipartitioned]

@@ -5,7 +5,7 @@ import {
   DAGSTER_THEME_KEY,
   DagsterTheme,
   Icon,
-  Subheading,
+  Subtitle,
 } from '@dagster-io/ui-components';
 import React from 'react';
 
@@ -34,12 +34,10 @@ export const UserPreferences = ({
   });
 
   const initialShortcutsEnabled = React.useRef(shortcutsEnabled);
-  const initialTheme = React.useRef(theme);
 
   const lastChangeValue = React.useRef(false);
   React.useEffect(() => {
-    const didChange =
-      initialTheme.current !== theme || initialShortcutsEnabled.current !== shortcutsEnabled;
+    const didChange = initialShortcutsEnabled.current !== shortcutsEnabled;
     if (lastChangeValue.current !== didChange) {
       onChangeRequiresReload(didChange);
       lastChangeValue.current = didChange;
@@ -66,7 +64,7 @@ export const UserPreferences = ({
   return (
     <>
       <Box padding={{bottom: 4}}>
-        <Subheading>Preferences</Subheading>
+        <Subtitle>Preferences</Subtitle>
       </Box>
       <Box flex={{justifyContent: 'space-between', alignItems: 'center'}}>
         <div>Timezone</div>

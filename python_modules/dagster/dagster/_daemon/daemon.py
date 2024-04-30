@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 import uuid
@@ -27,6 +28,7 @@ from dagster._daemon.monitoring import (
 )
 from dagster._daemon.sensor import execute_sensor_iteration_loop
 from dagster._daemon.types import DaemonHeartbeat
+from dagster._daemon.utils import DaemonErrorCapture
 from dagster._scheduler.scheduler import execute_scheduler_iteration_loop
 from dagster._utils.error import (
     SerializableErrorInfo,
@@ -44,6 +46,10 @@ def get_default_daemon_logger(daemon_name) -> logging.Logger:
 DAEMON_HEARTBEAT_ERROR_LIMIT = 5  # Show at most 5 errors
 TELEMETRY_LOGGING_INTERVAL = 3600 * 24  # Interval (in seconds) at which to log that daemon is alive
 _telemetry_daemon_session_id = str(uuid.uuid4())
+
+
+def _get_error_sleep_interval():
+    return int(os.getenv("DAGSTER_DAEMON_CORE_LOOP_EXCEPTION_SLEEP_INTERVAL", "5"))
 
 
 def get_telemetry_daemon_session_id() -> str:
@@ -124,12 +130,17 @@ class DagsterDaemon(AbstractContextManager, ABC, Generic[TContext]):
                         )
                         break
                     except Exception:
-                        error_info = serializable_error_info_from_exc_info(sys.exc_info())
-                        self._logger.error(
-                            "Caught error, daemon loop will restart:\n%s", error_info
+                        error_info = DaemonErrorCapture.on_exception(
+                            exc_info=sys.exc_info(),
+                            logger=self._logger,
+                            log_message="Caught error, daemon loop will restart",
                         )
                         self._errors.appendleft((error_info, pendulum.now("UTC")))
                         daemon_generator.close()
+
+                        # Wait a bit to ensure that errors don't happen in a tight loop
+                        daemon_shutdown_event.wait(_get_error_sleep_interval())
+
                         daemon_generator = self.core_loop(
                             workspace_process_context, daemon_shutdown_event
                         )
