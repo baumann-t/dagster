@@ -1,22 +1,26 @@
-from dagster import DagsterRun, Field, StringSource, IntSource
-from dagster._core.events import EngineEventData
-from dagster._core.launcher.base import RunLauncher, CheckRunHealthResult, WorkerStatus, LaunchRunContext
-from typing import Any, Dict, List, Mapping, Optional, Sequence
-from dagster._serdes.config_class import ConfigurableClassData
-from google.cloud import run_v2
+import json
+import logging
+import uuid
+
 from collections import namedtuple
-from dagster._core.storage.tags import RUN_WORKER_ID_TAG
+from typing import Any, Dict, List, Mapping, Optional, Sequence
+
+from dagster import DagsterRun, Field, StringSource, IntSource
 import dagster._check as check
+from dagster._core.events import EngineEventData
+from dagster._core.instance import T_DagsterInstance
+from dagster._core.launcher.base import CheckRunHealthResult, LaunchRunContext, RunLauncher, WorkerStatus
+from dagster._core.storage.tags import RUN_WORKER_ID_TAG
 from dagster._grpc.types import ExecuteRunArgs
 from dagster._serdes import ConfigurableClass
-from typing_extensions import Self
-from dagster._core.instance import T_DagsterInstance
-import uuid
-from google.longrunning.operations_pb2 import GetOperationRequest
-import json
+from dagster._serdes.config_class import ConfigurableClassData
+
 from google.api_core.exceptions import GoogleAPIError
 from google.api_core.operation import Operation
-import logging
+from google.cloud import run_v2
+from google.longrunning.operations_pb2 import GetOperationRequest
+from typing_extensions import Self
+
 
 Tags = namedtuple('Tags', ['job_execution', 'operation_id'])
 
@@ -25,25 +29,20 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         self,
         inst_data: Optional[ConfigurableClassData] = None,
         project_id=None,
-        region=None,
-        service_account=None,
         cloud_run_job_name=None,
         ):
 
         self._inst_data = inst_data
         self.project_id = project_id
-        self.region = region
-        self.service_account = service_account
-        self.cloud_run = run_v2.JobsClient()
         self.cloud_run_job_name = cloud_run_job_name
+        self.cloud_run_job_client = run_v2.JobsClient()
+        self.cloud_run_execution_client = run_v2.ExecutionsClient()
 
     @classmethod
     def config_type(cls) -> Dict[str, Any]:
         return {
             'project_id': Field(IntSource, is_required=False, description='Google Cloud project ID.'),
-            'region': Field(StringSource, is_required=False, description='Region for Cloud Run services.'),
-            'service_account': Field(StringSource, is_required=False, description='Service account email for Cloud Run.'),
-            'cloud_run_job_name': Field(StringSource, is_required=False, description='Docker image used to launch the Cloud Run task'),
+            'cloud_run_job_name': Field(StringSource, is_required=True, description='Existing cloud run job configuration, formated like projects/{project_id}/locations/{location}/jobs/{job_id}'),
         }
 
     @classmethod
@@ -84,7 +83,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
                     }]
                 }
             )
-            operation = self.cloud_run.run_job(request=request)
+            operation = self.cloud_run_job_client.run_job(request=request)
 
             self._set_run_tags(run, operation)
             self.report_launch_events(run, operation)
@@ -134,19 +133,17 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
         job_execution = tags.job_execution
 
         try:
-            client = run_v2.ExecutionsClient()
-            request = run_v2.DeleteExecutionRequest(
+            request = run_v2.CancelExecutionRequest(
                 name=job_execution,
             )
-            operation = client.delete_execution(request=request)
-            print(operation)
+            operation = self.cloud_run_execution_client.cancel_execution(request=request)
             if operation.done:
                 if operation.error:
                     raise Exception(f"An error occurred: {operation.error.message}")
                 return True
 
         except GoogleAPIError as e:
-            print(e)
+            logging.warning(f"An error occurred: {e}")
             return False
 
         return False
@@ -166,7 +163,7 @@ class CloudRunJobLauncher(RunLauncher[T_DagsterInstance], ConfigurableClass):
 
         try:
             operation_request = GetOperationRequest(name=tags.operation_id)
-            operation = self.cloud_run.get_operation(request=operation_request)
+            operation = self.cloud_run_job_client.get_operation(request=operation_request)
             if operation.done:
                 if operation.error:
                     return CheckRunHealthResult(WorkerStatus.FAILED, operation.error.message, run_worker_id=run_worker_id)

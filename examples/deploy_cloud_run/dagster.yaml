@@ -11,8 +11,6 @@ run_launcher:
   class: CloudRunJobLauncher
   config:
     project_id: 77834198250
-    region: northamerica-northeast1
-    service_account: dagster@dagster-420313.iam.gserviceaccount.com
     cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster
 
 run_storage:

@@ -1,126 +1,84 @@
 {
-uid: "a2c71bdc-0ca3-4d5c-98e2-d6394a3f2a04"
-generation: 1
-create_time {
-  seconds: 1713921352
-  nanos: 923796000
-    }
-start_time {
-  seconds: 1713921355
-  nanos: 867463000
-    }
-update_time {
-  seconds: 1713921352
-  nanos: 923796000
-    }
-launch_stage: GA
-job: "dagster"
-parallelism: 1
-task_count: 1
-template {
-  containers {
-    image: "northamerica-northeast1-docker.pkg.dev/dagster-420313/dagster/dagster@sha256:7d947b7a88b8ada9e54cf4fb93377c05cafb93b9a3c08047c7d0e5389adb23ed"
-    args: "dagster"
-    args: "api"
-    args: "execute_run"
-    args: "{\"__class__\": \"ExecuteRunArgs\", \"instance_ref\": {\"__class__\": \"InstanceRef\", \"compute_logs_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"LocalComputeLogManager\", \"config_yaml\": \"base_dir: /opt/dagster/dagster_home/storage\\n\", \"module_name\": \"dagster.core.storage.local_compute_log_manager\"}, \"custom_instance_class_data\": null, \"event_storage_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"PostgresEventLogStorage\", \"config_yaml\": \"postgres_db:\\n  db_name:\\n    env: DAGSTER_PG_DB\\n  hostname:\\n    env: DAGSTER_PG_HOST\\n  password:\\n    env: DAGSTER_PG_PASSWORD\\n  port: 5432\\n  username:\\n    env: DAGSTER_PG_USERNAME\\n\", \"module_name\": \"dagster_postgres.event_log\"}, \"local_artifact_storage_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"LocalArtifactStorage\", \"config_yaml\": \"base_dir: /opt/dagster/dagster_home/\\n\", \"module_name\": \"dagster.core.storage.root\"}, \"run_coordinator_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"QueuedRunCoordinator\", \"config_yaml\": \"{}\\n\", \"module_name\": \"dagster.core.run_coordinator\"}, \"run_launcher_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"CloudRunJobLauncher\", \"config_yaml\": \"cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster\\nproject_id: 77834198250\\nregion: northamerica-northeast1\\nservice_account: dagster@dagster-420313.iam.gserviceaccount.com\\n\", \"module_name\": \"dagster_gcp.cloud_run\"}, \"run_storage_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"PostgresRunStorage\", \"config_yaml\": \"postgres_db:\\n  db_name:\\n    env: DAGSTER_PG_DB\\n  hostname:\\n    env: DAGSTER_PG_HOST\\n  password:\\n    env: DAGSTER_PG_PASSWORD\\n  port: 5432\\n  username:\\n    env: DAGSTER_PG_USERNAME\\n\", \"module_name\": \"dagster_postgres.run_storage\"}, \"schedule_storage_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"PostgresScheduleStorage\", \"config_yaml\": \"postgres_db:\\n  db_name:\\n    env: DAGSTER_PG_DB\\n  hostname:\\n    env: DAGSTER_PG_HOST\\n  password:\\n    env: DAGSTER_PG_PASSWORD\\n  port: 5432\\n  username:\\n    env: DAGSTER_PG_USERNAME\\n\", \"module_name\": \"dagster_postgres.schedule_storage\"}, \"scheduler_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"DagsterDaemonScheduler\", \"config_yaml\": \"{}\\n\", \"module_name\": \"dagster.core.scheduler\"}, \"secrets_loader_data\": null, \"settings\": {\"run_monitoring\": {\"enabled\": true, \"poll_interval_seconds\": 10}}, \"storage_data\": {\"__class__\": \"ConfigurableClassData\", \"class_name\": \"CompositeStorage\", \"config_yaml\": \"event_log_storage:\\n  class_name: PostgresEventLogStorage\\n  config_yaml: \\\"postgres_db:\\\\n  db_name:\\\\n    env: DAGSTER_PG_DB\\\\n  hostname:\\\\n  \\\\\\n    \\\\  env: DAGSTER_PG_HOST\\\\n  password:\\\\n    env: DAGSTER_PG_PASSWORD\\\\n  port: 5432\\\\n\\\\\\n    \\\\  username:\\\\n    env: DAGSTER_PG_USERNAME\\\\n\\\"\\n  module_name: dagster_postgres.event_log\\nrun_storage:\\n  class_name: PostgresRunStorage\\n  config_yaml: \\\"postgres_db:\\\\n  db_name:\\\\n    env: DAGSTER_PG_DB\\\\n  hostname:\\\\n  \\\\\\n    \\\\  env: DAGSTER_PG_HOST\\\\n  password:\\\\n    env: DAGSTER_PG_PASSWORD\\\\n  port: 5432\\\\n\\\\\\n    \\\\  username:\\\\n    env: DAGSTER_PG_USERNAME\\\\n\\\"\\n  module_name: dagster_postgres.run_storage\\nschedule_storage:\\n  class_name: PostgresScheduleStorage\\n  config_yaml: \\\"postgres_db:\\\\n  db_name:\\\\n    env: DAGSTER_PG_DB\\\\n  hostname:\\\\n  \\\\\\n    \\\\  env: DAGSTER_PG_HOST\\\\n  password:\\\\n    env: DAGSTER_PG_PASSWORD\\\\n  port: 5432\\\\n\\\\\\n    \\\\  username:\\\\n    env: DAGSTER_PG_USERNAME\\\\n\\\"\\n  module_name: dagster_postgres.schedule_storage\\n\", \"module_name\": \"dagster.core.storage.legacy_storage\"}}, \"pipeline_origin\": {\"__class__\": \"PipelinePythonOrigin\", \"pipeline_name\": \"__ASSET_JOB\", \"repository_origin\": {\"__class__\": \"RepositoryPythonOrigin\", \"code_pointer\": {\"__class__\": \"FileCodePointer\", \"fn_name\": \"<<LOAD_ALL_ASSETS>>\", \"python_file\": \"/opt/dagster/app/defs.py\", \"working_directory\": \"/opt/dagster/app\"}, \"container_context\": {}, \"container_image\": null, \"entry_point\": [\"dagster\"], \"executable_path\": \"/usr/local/bin/python\"}}, \"pipeline_run_id\": \"39c427e2-86d1-438e-84ad-2a4de1ff46df\", \"set_exit_code_on_failure\": null}"
-    env {
-      name: "DAGSTER_PG_DB"
-      value_source {
-        secret_key_ref {
-          secret: "DAGSTER_PG_DB"
-          version: "1"
-                    }
-                }
-            }
-    env {
-      name: "DAGSTER_PG_PASSWORD"
-      value_source {
-        secret_key_ref {
-          secret: "DAGSTER_PG_PASSWORD"
-          version: "1"
-                    }
-                }
-            }
-    env {
-      name: "DAGSTER_PG_HOST"
-      value_source {
-        secret_key_ref {
-          secret: "DAGSTER_PG_HOST"
-          version: "1"
-                    }
-                }
-            }
-    env {
-      name: "DAGSTER_PG_USERNAME"
-      value_source {
-        secret_key_ref {
-          secret: "DAGSTER_PG_USERNAME"
-          version: "1"
-                    }
-                }
-            }
-    resources {
-      limits {
-        key: "memory"
-        value: "512Mi"
-                }
-      limits {
-        key: "cpu"
-        value: "1000m"
-                }
-            }
+    "__class__": "ExecuteRunArgs",
+    "instance_ref": {
+        "__class__": "InstanceRef",
+        "compute_logs_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "LocalComputeLogManager",
+            "config_yaml": "base_dir: /Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run/tmp3egocloa/storage\n",
+            "module_name": "dagster.core.storage.local_compute_log_manager"
+        },
+        "custom_instance_class_data": null,
+        "event_storage_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "PostgresEventLogStorage",
+            "config_yaml": "postgres_db:\n  db_name:\n    env: DAGSTER_PG_DB\n  hostname:\n    env: DAGSTER_PG_HOST\n  password:\n    env: DAGSTER_PG_PASSWORD\n  port: 5432\n  username:\n    env: DAGSTER_PG_USERNAME\n",
+            "module_name": "dagster_postgres.event_log"
+        },
+        "local_artifact_storage_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "LocalArtifactStorage",
+            "config_yaml": "base_dir: /Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run/tmp3egocloa\n",
+            "module_name": "dagster.core.storage.root"
+        },
+        "run_coordinator_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "QueuedRunCoordinator",
+            "config_yaml": "{}\n",
+            "module_name": "dagster.core.run_coordinator"
+        },
+        "run_launcher_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "CloudRunJobLauncher",
+            "config_yaml": "cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster\nproject_id: dagster\nregion: northamerica-northeast1\nservice_account: dagster@dagster-420313.iam.gserviceaccount.com\n",
+            "module_name": "dagster_gcp.cloud_run"
+        },
+        "run_storage_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "PostgresRunStorage",
+            "config_yaml": "postgres_db:\n  db_name:\n    env: DAGSTER_PG_DB\n  hostname:\n    env: DAGSTER_PG_HOST\n  password:\n    env: DAGSTER_PG_PASSWORD\n  port: 5432\n  username:\n    env: DAGSTER_PG_USERNAME\n",
+            "module_name": "dagster_postgres.run_storage"
+        },
+        "schedule_storage_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "PostgresScheduleStorage",
+            "config_yaml": "postgres_db:\n  db_name:\n    env: DAGSTER_PG_DB\n  hostname:\n    env: DAGSTER_PG_HOST\n  password:\n    env: DAGSTER_PG_PASSWORD\n  port: 5432\n  username:\n    env: DAGSTER_PG_USERNAME\n",
+            "module_name": "dagster_postgres.schedule_storage"
+        },
+        "scheduler_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "DagsterDaemonScheduler",
+            "config_yaml": "{}\n",
+            "module_name": "dagster.core.scheduler"
+        },
+        "secrets_loader_data": null,
+        "settings": {},
+        "storage_data": {
+            "__class__": "ConfigurableClassData",
+            "class_name": "CompositeStorage",
+            "config_yaml": "event_log_storage:\n  class_name: PostgresEventLogStorage\n  config_yaml: \"postgres_db:\\n  db_name:\\n    env: DAGSTER_PG_DB\\n  hostname:\\n  \\\n    \\  env: DAGSTER_PG_HOST\\n  password:\\n    env: DAGSTER_PG_PASSWORD\\n  port: 5432\\n\\\n    \\  username:\\n    env: DAGSTER_PG_USERNAME\\n\"\n  module_name: dagster_postgres.event_log\nrun_storage:\n  class_name: PostgresRunStorage\n  config_yaml: \"postgres_db:\\n  db_name:\\n    env: DAGSTER_PG_DB\\n  hostname:\\n  \\\n    \\  env: DAGSTER_PG_HOST\\n  password:\\n    env: DAGSTER_PG_PASSWORD\\n  port: 5432\\n\\\n    \\  username:\\n    env: DAGSTER_PG_USERNAME\\n\"\n  module_name: dagster_postgres.run_storage\nschedule_storage:\n  class_name: PostgresScheduleStorage\n  config_yaml: \"postgres_db:\\n  db_name:\\n    env: DAGSTER_PG_DB\\n  hostname:\\n  \\\n    \\  env: DAGSTER_PG_HOST\\n  password:\\n    env: DAGSTER_PG_PASSWORD\\n  port: 5432\\n\\\n    \\  username:\\n    env: DAGSTER_PG_USERNAME\\n\"\n  module_name: dagster_postgres.schedule_storage\n",
+            "module_name": "dagster.core.storage.legacy_storage"
         }
-  max_retries: 1
-  timeout {
-    seconds: 600
+    },
+    "pipeline_origin": {
+        "__class__": "PipelinePythonOrigin",
+        "pipeline_name": "__ASSET_JOB",
+        "repository_origin": {
+            "__class__": "RepositoryPythonOrigin",
+            "code_pointer": {
+                "__class__": "FileCodePointer",
+                "fn_name": "<<LOAD_ALL_ASSETS>>",
+                "python_file": "/Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run/defs.py",
+                "working_directory": "/Users/thomasbaumann/Documents/code/dagster/examples/deploy_cloud_run"
+            },
+            "container_context": {},
+            "container_image": null,
+            "entry_point": [
+                "dagster"
+            ],
+            "executable_path": "/Users/thomasbaumann/.pyenv/versions/3.10.14/envs/dagster310/bin/python"
         }
-  service_account: "77834198250-compute@developer.gserviceaccount.com"
-  execution_environment: EXECUTION_ENVIRONMENT_GEN2
-    }
-reconciling: true
-conditions {
-  type_: "Started"
-  state: CONDITION_SUCCEEDED
-  last_transition_time {
-    seconds: 1713921355
-    nanos: 867463000
-        }
-    }
-conditions {
-  type_: "Completed"
-  state: CONDITION_RECONCILING
-  message: "Waiting for execution to complete."
-  last_transition_time {
-    seconds: 1713921356
-    nanos: 148581000
-        }
-    }
-conditions {
-  type_: "ContainerReady"
-  state: CONDITION_SUCCEEDED
-  last_transition_time {
-    seconds: 1713921353
-    nanos: 587199000
-        }
-    }
-conditions {
-  type_: "ResourcesAvailable"
-  state: CONDITION_SUCCEEDED
-  last_transition_time {
-    seconds: 1713921353
-    nanos: 731975000
-        }
-    }
-conditions {
-  type_: "Retry"
-  state: CONDITION_SUCCEEDED
-  message: "System will retry after 0:01:00 from lastTransitionTime for polling interval"
-  last_transition_time {
-    seconds: 1713921366
-    nanos: 431727000
-        }
-  severity: INFO
-  reason: WAITING_FOR_OPERATION
-    }
+    },
+    "pipeline_run_id": "2b5b74e8-e0d1-43eb-9c28-b4caa320dd71",
+    "set_exit_code_on_failure": null
 }
