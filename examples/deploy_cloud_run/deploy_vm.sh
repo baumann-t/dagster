@@ -10,13 +10,15 @@ REMOTE_DAGSTER_GCP_PATH="/opt/dagster/app/python_modules/libraries/dagster-gcp"
 REMOTE_DIR="/opt/dagster/app"
 
 # Create a Google Cloud VM instance
-# gcloud compute instances create $VM_NAME \
-#     --zone=$ZONE \
-#     --machine-type=e2-micro \
-#     --image-family=ubuntu-2204-lts \
-#     --image-project=ubuntu-os-cloud \
-#     --project=$PROJECT_ID
+gcloud compute instances create $VM_NAME \
+    --zone=$ZONE \
+    --machine-type=e2-micro \
+    --image-family=ubuntu-2204-lts \
+    --image-project=ubuntu-os-cloud \
+    --project=$PROJECT_ID
 
+echo "waiting for VM to be created..."
+sleep 10
 
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
@@ -47,13 +49,13 @@ gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     # Install Dagster
     pip install dagster dagster-postgres dagster-webserver
 
-    # Install Dagster-GCP
-    pip install ./opt/dagster/app/python_modules/libraries/dagster-gcp/dagster-gcp
-
     echo 'installed dagster'
 
     export DAGSTER_HOME=$REMOTE_DIR
     cd $REMOTE_DIR
+
+    # Install Dagster-GCP
+    pip install .python_modules/libraries/dagster-gcp/dagster-gcp
 
     echo 'starting dagster daemon'
     # Start the Dagster daemon
