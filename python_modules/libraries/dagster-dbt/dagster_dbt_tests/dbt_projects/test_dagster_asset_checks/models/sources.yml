@@ -1,6 +1,0 @@
-sources:
-  - name: jaffle_shop
-    database: jaffle_shop
-    schema: main
-    tables:
-      - name: raw_customers
