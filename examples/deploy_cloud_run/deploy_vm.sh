@@ -67,10 +67,3 @@ gcloud compute ssh $VM_NAME --zone=$ZONE --command="
 
 
 " --project=$PROJECT_ID
-
-EXTERNAL_IP=$(gcloud compute instances describe $VM_NAME \
-    --format='get(networkInterfaces[0].accessConfigs[0].natIP)' \
-    --zone=$ZONE \
-    --project=$PROJECT_ID)
-
-echo "Dagster is now running on the VM. Access Dagit at http://${EXTERNAL_IP}:3000"
