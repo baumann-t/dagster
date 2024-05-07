@@ -8,6 +8,9 @@ LOCAL_FILE_PATH="./vm_config/*"
 DAGSTER_GCP_PATH="../../python_modules/libraries/dagster-gcp/*"
 REMOTE_DAGSTER_GCP_PATH="/opt/dagster/app/python_modules/libraries/dagster_gcp"
 REMOTE_DIR="/opt/dagster/app"
+# service account must have the right to launch a cloud run job
+SERVICE_ACCOUNT_EMAIL=""
+SCOPES="cloud-platform"
 
 # Create a Google Cloud VM instance
 gcloud compute instances create $VM_NAME \
@@ -18,13 +21,17 @@ gcloud compute instances create $VM_NAME \
     --project=$PROJECT_ID
 
 # echo "waiting for VM to be created..."
-# sleep 10
+sleep 10
+
+gcloud compute instances set-service-account $VM_NAME \
+  --service-account=$SERVICE_ACCOUNT_EMAIL \
+  --scopes=$SCOPES
+  --project=$PROJECT_ID
 
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
-    sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
-    sudo chown -R $USER $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
+    sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH $CREDENTIALS_DESTINATION
+    sudo chown -R $USER $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH $CREDENTIALS_DESTINATION
 " --project=$PROJECT_ID
-
 
 gcloud compute scp $LOCAL_FILE_PATH ${VM_NAME}:$REMOTE_DIR \
     --zone=$ZONE \
@@ -34,7 +41,11 @@ gcloud compute scp --recurse $DAGSTER_GCP_PATH ${VM_NAME}:$REMOTE_DAGSTER_GCP_PA
     --zone=$ZONE \
     --project=$PROJECT_ID
 
-# SSH into the VM and run setup commands
+gcloud compute scp $CREDENTIALS_JSON ${VM_NAME}:$CREDENTIALS_DESTINATION \
+    --zone=$ZONE \
+    --project=$PROJECT_ID
+
+
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     # Update package list and install prerequisites
     sudo apt-get update
@@ -55,7 +66,6 @@ gcloud compute ssh $VM_NAME --zone=$ZONE --command="
 
     export DAGSTER_HOME=$REMOTE_DIR
     cd $REMOTE_DIR
-
 
     echo 'starting dagster daemon'
     # Start the Dagster daemon
