@@ -2,38 +2,38 @@
 
 VM_NAME="dagster-vm"
 ZONE="northamerica-northeast1-a"
-PROJECT_ID="dagster-420313"
+PROJECT_ID=""
 LOCAL_FILE_PATH="./vm_config/*"
 DAGSTER_GCP_PATH="../../python_modules/libraries/dagster-gcp/*"
 REMOTE_DAGSTER_GCP_PATH="/opt/dagster/app/python_modules/libraries/dagster_gcp"
 REMOTE_DIR="/opt/dagster/app"
-SERVICE_ACCOUNT_EMAIL="dagster@dagster-420313.iam.gserviceaccount.com" # service account must have the right to launch a cloud run job and access secrets from secret manager
+SERVICE_ACCOUNT_EMAIL="" # service account must have the right to launch a cloud run job and access secrets from secret manager
 SCOPES="cloud-platform"
 
-# gcloud compute instances create $VM_NAME \
-#     --zone=$ZONE \
-#     --machine-type=e2-micro \
-#     --image-family=ubuntu-2204-lts \
-#     --image-project=ubuntu-os-cloud \
-#     --project=$PROJECT_ID \
-#     --service-account=$SERVICE_ACCOUNT_EMAIL \
-#     --scopes=$SCOPES
+gcloud compute instances create $VM_NAME \
+    --zone=$ZONE \
+    --machine-type=e2-micro \
+    --image-family=ubuntu-2204-lts \
+    --image-project=ubuntu-os-cloud \
+    --project=$PROJECT_ID \
+    --service-account=$SERVICE_ACCOUNT_EMAIL \
+    --scopes=$SCOPES
 
-# echo "waiting for VM to be created..."
-# sleep 40
+echo "waiting for VM to be created..."
+sleep 40
 
-# gcloud compute ssh $VM_NAME --zone=$ZONE --command="
-#     sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
-#     sudo chown -R $USER $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
-# " --project=$PROJECT_ID
+gcloud compute ssh $VM_NAME --zone=$ZONE --command="
+    sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
+    sudo chown -R $USER $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
+" --project=$PROJECT_ID
 
-# gcloud compute scp $LOCAL_FILE_PATH ${VM_NAME}:$REMOTE_DIR \
-#     --zone=$ZONE \
-#     --project=$PROJECT_ID
+gcloud compute scp $LOCAL_FILE_PATH ${VM_NAME}:$REMOTE_DIR \
+    --zone=$ZONE \
+    --project=$PROJECT_ID
 
-# gcloud compute scp --recurse $DAGSTER_GCP_PATH ${VM_NAME}:$REMOTE_DAGSTER_GCP_PATH \
-#     --zone=$ZONE \
-#     --project=$PROJECT_ID
+gcloud compute scp --recurse $DAGSTER_GCP_PATH ${VM_NAME}:$REMOTE_DAGSTER_GCP_PATH \
+    --zone=$ZONE \
+    --project=$PROJECT_ID
 
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     # Update package list and install prerequisites

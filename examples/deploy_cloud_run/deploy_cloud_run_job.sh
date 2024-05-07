@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_ID="dagster-420313"
+PROJECT_ID=""
 IMAGE_NAME="dagster"
 FOLDER_NAME="dagster"
 REGION="northamerica-northeast1"
