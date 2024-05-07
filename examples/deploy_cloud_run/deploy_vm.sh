@@ -7,14 +7,8 @@ LOCAL_FILE_PATH="./vm_config/*"
 DAGSTER_GCP_PATH="../../python_modules/libraries/dagster-gcp/*"
 REMOTE_DAGSTER_GCP_PATH="/opt/dagster/app/python_modules/libraries/dagster_gcp"
 REMOTE_DIR="/opt/dagster/app"
-SERVICE_ACCOUNT_EMAIL="dagster@dagster-420313.iam.gserviceaccount.com" # service account must have the right to launch a cloud run job
+SERVICE_ACCOUNT_EMAIL="dagster@dagster-420313.iam.gserviceaccount.com" # service account must have the right to launch a cloud run job and access secrets from secret manager
 SCOPES="cloud-platform"
-
-#POSTGRES INSTANCE
-DAGSTER_PG_HOST=
-DAGSTER_PG_USERNAME=
-DAGSTER_PG_PASSWORD=
-DAGSTER_PG_DB=
 
 gcloud compute instances create $VM_NAME \
     --zone=$ZONE \
@@ -26,7 +20,7 @@ gcloud compute instances create $VM_NAME \
     --scopes=$SCOPES
 
 echo "waiting for VM to be created..."
-sleep 30
+sleep 40
 
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
@@ -51,6 +45,12 @@ gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     # Create and activate a virtual environment with Python 3.10
     python3 -m venv .venv
     source .venv/bin/activate
+
+    # fetch secrets for postgres db from secret manager
+    export DAGSTER_PG_HOST=\$(gcloud secrets versions access latest --secret='DAGSTER_PG_HOST' --project=$PROJECT_ID)
+    export DAGSTER_PG_USERNAME=\$(gcloud secrets versions access latest --secret='DAGSTER_PG_USERNAME' --project=$PROJECT_ID)
+    export DAGSTER_PG_PASSWORD=\$(gcloud secrets versions access latest --secret='DAGSTER_PG_PASSWORD' --project=$PROJECT_ID)
+    export DAGSTER_PG_DB=\$(gcloud secrets versions access latest --secret='DAGSTER_PG_DB' --project=$PROJECT_ID)
 
     # Install Dagster
     pip install dagster-postgres dagster-webserver
