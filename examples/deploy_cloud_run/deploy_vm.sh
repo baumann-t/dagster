@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Variables
 VM_NAME="dagster-vm"
 ZONE="northamerica-northeast1-a"
 PROJECT_ID="dagster-420313"
@@ -8,29 +7,24 @@ LOCAL_FILE_PATH="./vm_config/*"
 DAGSTER_GCP_PATH="../../python_modules/libraries/dagster-gcp/*"
 REMOTE_DAGSTER_GCP_PATH="/opt/dagster/app/python_modules/libraries/dagster_gcp"
 REMOTE_DIR="/opt/dagster/app"
-# service account must have the right to launch a cloud run job
-SERVICE_ACCOUNT_EMAIL=""
+SERVICE_ACCOUNT_EMAIL="dagster@dagster-420313.iam.gserviceaccount.com" # service account must have the right to launch a cloud run job
 SCOPES="cloud-platform"
 
-# Create a Google Cloud VM instance
 gcloud compute instances create $VM_NAME \
     --zone=$ZONE \
     --machine-type=e2-micro \
     --image-family=ubuntu-2204-lts \
     --image-project=ubuntu-os-cloud \
-    --project=$PROJECT_ID
+    --project=$PROJECT_ID \
+    --service-account=$SERVICE_ACCOUNT_EMAIL \
+    --scopes=$SCOPES
 
-# echo "waiting for VM to be created..."
-sleep 10
-
-gcloud compute instances set-service-account $VM_NAME \
-  --service-account=$SERVICE_ACCOUNT_EMAIL \
-  --scopes=$SCOPES
-  --project=$PROJECT_ID
+echo "waiting for VM to be created..."
+sleep 30
 
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
-    sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH $CREDENTIALS_DESTINATION
-    sudo chown -R $USER $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH $CREDENTIALS_DESTINATION
+    sudo mkdir -p $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
+    sudo chown -R $USER $REMOTE_DIR $REMOTE_DAGSTER_GCP_PATH
 " --project=$PROJECT_ID
 
 gcloud compute scp $LOCAL_FILE_PATH ${VM_NAME}:$REMOTE_DIR \
@@ -40,11 +34,6 @@ gcloud compute scp $LOCAL_FILE_PATH ${VM_NAME}:$REMOTE_DIR \
 gcloud compute scp --recurse $DAGSTER_GCP_PATH ${VM_NAME}:$REMOTE_DAGSTER_GCP_PATH \
     --zone=$ZONE \
     --project=$PROJECT_ID
-
-gcloud compute scp $CREDENTIALS_JSON ${VM_NAME}:$CREDENTIALS_DESTINATION \
-    --zone=$ZONE \
-    --project=$PROJECT_ID
-
 
 gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     # Update package list and install prerequisites
@@ -74,6 +63,5 @@ gcloud compute ssh $VM_NAME --zone=$ZONE --command="
     echo 'starting dagster daemon webserver'
     # Start the dagster webserver
     nohup dagster-webserver -h 0.0.0.0 -p 3000
-
 
 " --project=$PROJECT_ID

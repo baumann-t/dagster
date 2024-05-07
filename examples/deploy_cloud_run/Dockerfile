@@ -6,8 +6,6 @@ RUN pip install \
     dagster \
     dagster-postgres
 
-    # Add repository code
-
-COPY  defs.py  /opt/dagster/app/
+COPY  vm_config/defs.py  /opt/dagster/app/
 
 ENV DAGSTER_HOME=/opt/dagster/dagster_home/

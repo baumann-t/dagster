@@ -11,7 +11,7 @@ run_launcher:
   class: CloudRunJobLauncher
   config:
     project_id: 77834198250
-    cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster
+    cloud_run_job_name: projects/77834198250/locations/northamerica-northeast1/jobs/dagster-job
 
 run_monitoring:
   enabled: true
