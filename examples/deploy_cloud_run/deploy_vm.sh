@@ -10,6 +10,12 @@ REMOTE_DIR="/opt/dagster/app"
 SERVICE_ACCOUNT_EMAIL="dagster@dagster-420313.iam.gserviceaccount.com" # service account must have the right to launch a cloud run job
 SCOPES="cloud-platform"
 
+#POSTGRES INSTANCE
+DAGSTER_PG_HOST=
+DAGSTER_PG_USERNAME=
+DAGSTER_PG_PASSWORD=
+DAGSTER_PG_DB=
+
 gcloud compute instances create $VM_NAME \
     --zone=$ZONE \
     --machine-type=e2-micro \
